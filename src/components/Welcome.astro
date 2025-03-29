@@ -1,0 +1,41 @@
+---
+import SplineScene from './SplineScene';
+import ChatBot from './ChatBot';
+import ImageUpload from './ImageUpload';
+---
+
+<div class="min-h-screen bg-amber-50">
+  <!-- 3D Coffee Scene (Full Screen) -->
+  <section class="h-screen">
+    <SplineScene client:load />
+  </section>
+
+  <!-- Rest of content starts here -->
+  <div id="content">
+    
+    <!-- Compartir experiencia - Subida de imágenes y Chat -->
+    <section id="compartir" class="py-16" style="background-color: #F2CDB7;">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-amber-900 mb-8 text-center">Conecta con nosotros</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- Componente de subida de imágenes -->
+          <div>
+            <ImageUpload client:visible />
+          </div>
+          
+          <!-- Componente de chat en línea -->
+          <div class="bg-white p-6 rounded-lg shadow-md h-full flex flex-col">
+            <h3 class="text-2xl font-bold text-amber-900 mb-4">Chatea con nuestro barista virtual</h3>
+            <p class="text-gray-600 mb-6">¿Tienes preguntas sobre nuestros productos o métodos de preparación? ¡Pregúntale a nuestro barista virtual!</p>
+            
+            <div class="flex-grow border border-amber-200 rounded-lg overflow-hidden flex flex-col" style="min-height: 350px">
+              <div class="client:load">
+                <ChatBot client:visible />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
