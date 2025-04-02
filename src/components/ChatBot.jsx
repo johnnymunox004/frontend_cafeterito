@@ -8,41 +8,65 @@ export default function ChatBot() {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   // Auto-scroll al recibir nuevos mensajes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Simular respuestas del bot
-  const handleSendMessage = () => {
+  // Enviar mensaje al endpoint y obtener respuesta
+  const handleSendMessage = async () => {
     if (input.trim() === '') return;
     
     // Añadir mensaje del usuario
     setMessages([...messages, { text: input, sender: 'user' }]);
+    const userMessage = input;
     setInput('');
     
     // Simular bot escribiendo
     setIsTyping(true);
+    setIsError(false);
     
-    // Simular respuesta después de 1-2 segundos
-    setTimeout(() => {
-      setIsTyping(false);
-      let response;
-      const userMessage = input.toLowerCase();
+    try {
+      // Llamar al endpoint con el formato correcto
+      const response = await fetch('https://d691-135-237-130-232.ngrok-free.app/coffee-expert/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+          pregunta: userMessage,  // Cambiado de 'query' a 'pregunta'
+          user_id: 'web_user',
+          session_id: Date.now().toString()
+        }),
+      });
       
-      if (userMessage.includes('precio') || userMessage.includes('costo')) {
-        response = 'Nuestros precios varían entre $10 y $25 dependiendo del tipo de café. ¿Te interesa alguno en particular?';
-      } else if (userMessage.includes('origen') || userMessage.includes('procedencia')) {
-        response = 'Trabajamos con cafés de Colombia, Etiopía, Brasil y Guatemala. ¡Todos cultivados de manera sostenible!';
-      } else if (userMessage.includes('envío') || userMessage.includes('entrega')) {
-        response = 'Realizamos envíos a todo el país en 2-3 días hábiles. ¡Envío gratis en compras mayores a $50!';
-      } else {
-        response = 'Gracias por tu mensaje. ¿Puedo ayudarte con información sobre nuestros cafés, proceso de compra o métodos de preparación?';
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error del servidor:', errorText);
+        throw new Error('Error en la respuesta del servidor');
       }
       
-      setMessages(prev => [...prev, { text: response, sender: 'bot' }]);
-    }, Math.random() * 1000 + 1000); // Entre 1 y 2 segundos
+      const data = await response.json();
+      
+      // Añadir respuesta del bot
+      setIsTyping(false);
+      setMessages(prev => [...prev, { 
+        text: data.respuesta || 'Lo siento, no pude procesar tu solicitud.', 
+        sender: 'bot' 
+      }]);
+      
+    } catch (error) {
+      console.error('Error al comunicarse con el bot:', error);
+      setIsTyping(false);
+      setIsError(true);
+      setMessages(prev => [...prev, { 
+        text: 'Lo siento, estoy teniendo problemas para responder. Por favor, intenta de nuevo más tarde.', 
+        sender: 'bot' 
+      }]);
+    }
   };
 
   return (
